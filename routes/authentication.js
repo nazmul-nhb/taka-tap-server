@@ -11,9 +11,9 @@ router.post('/register', async (req, res) => {
         const user = req.body;
         const rawPIN = user.pin;
 
-        const userExists = await userCollection.findOne({ email: user.email });
-
         // check for existing user
+        const userExists = await userCollection.findOne({ $or: [{ email: user.email }, { mobile: user.mobile }] });
+        
         if (userExists) {
             return res.status(409).send({ message: 'User Already Exists!' });
         };
