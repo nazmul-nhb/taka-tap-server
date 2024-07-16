@@ -1,5 +1,6 @@
 import express from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { userCollection } from "../db/takaDB.js";
 
@@ -15,7 +16,7 @@ router.post('/register', async (req, res) => {
         const userExists = await userCollection.findOne({ $or: [{ email: user.email }, { mobile: user.mobile }] });
 
         if (userExists) {
-            return res.status(409).send({ message: 'User Already Exists!' });
+            return res.send({ message: 'User Already Exists!' });
         };
 
         // generate hashed PIN
@@ -31,18 +32,19 @@ router.post('/register', async (req, res) => {
 });
 
 // login a user
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
+    console.log(req.body);
     try {
         const { credential, pin } = req.body;
 
         const user = await userCollection.findOne({ $or: [{ email: credential }, { mobile: credential }] });
-
+        
         if (!user) {
             return res.send({ success: false, message: "Account Not Found!" });
         }
 
         const pinMatched = await bcrypt.compare(pin, user.pin);
-
+       
         if (!pinMatched) {
             return res.send({ success: false, message: "Wrong PIN!" });
         }
@@ -50,6 +52,7 @@ router.post("/login", async (req, res) => {
         delete user.pin;
 
         const token = jwt.sign(user, process.env.TOKEN_SECRET);
+        
         res.send({ token, success: true, message: "Successfully Logged In!" });
     } catch (error) {
         res.status(500).send({ message: "Login Error!" });
