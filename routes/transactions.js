@@ -19,23 +19,29 @@ const generateTransactionID = () => {
 router.post('/in/:amount', async (req, res) => {
     try {
         const amount = parseInt(req.params.amount);
-
-        const filter = { email: req.body.email };
-        const user = await userCollection.findOne(filter);
+        const { email, agent, cash_in_time } = req.body;
 
         const updatedBalance = { $inc: { balance: amount } };
-        const options = { upsert: true };
-        
-        // update balance in user profile
-        const userResult = await userCollection.updateOne(filter, updatedBalance, options);
+        const options = { returnDocument: 'after' };
 
-        user.transactionID = generateTransactionID();
+        // update balance in user profile and get updated info
+        const user = await userCollection.findOneAndUpdate({ email }, updatedBalance, options);
+
+        if (!user) {
+            return res.status(500).send({ success: false, message: 'User Not Found! Cash In Failed!' });
+        }
+
         delete user.pin;
+        delete user._id;
+
+        const transaction = {
+            ...user, transactionID: generateTransactionID(), cash_in_amount: amount, agent, cash_in_time
+        };
 
         // update balance in transaction collection
-        const transactionResult = await transactionCollection.insertOne();
+        const transactionResult = await transactionCollection.insertOne(transaction);
 
-        if (userResult.modifiedCount > 0 && transactionResult.insertedId) {
+        if (transactionResult.insertedId) {
             return res.send({ success: true, message: 'Cash In Succeeded!' });
         } else {
             return res.status(500).send({ success: false, message: 'Cash In Failed!' });
