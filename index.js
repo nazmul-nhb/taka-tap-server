@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { connectDB } from "./db/takaDB.js";
 import authRoutes from "./routes/authentication.js";
+import userRoutes from "./routes/users.js";
 
 dotenv.config();
 
@@ -33,7 +34,7 @@ app.use(express.json());
 
 // routes
 app.use('/auth', authRoutes);
-
+app.use('/users', userRoutes);
 
 app.get("/", async (req, res) => {
     res.send("Taka Server is Running!");
