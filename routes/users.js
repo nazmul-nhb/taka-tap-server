@@ -16,7 +16,6 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
     }
 });
 
-
 // get single user info
 router.get('/single', verifyToken, async (req, res) => {
     try {
@@ -28,5 +27,15 @@ router.get('/single', verifyToken, async (req, res) => {
         res.status(500).send('Error Occurred: ', error);
     }
 });
+
+// update a user with admin account
+router.patch('/:email', verifyToken, verifyAdmin, async (req, res) => {
+    const user =req.body;
+    const filter = { email: req.params.email };
+    const options = { upsert: true };
+    const updatedUser = { $set: user };
+    const result = await userCollection.updateOne(filter, updatedUser, options);
+    res.send(result);
+})
 
 export default router;

@@ -1,7 +1,6 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ObjectId } from "mongodb";
 import { userCollection } from "../db/takaDB.js";
 
 const router = express.Router();
