@@ -16,6 +16,17 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
     }
 });
 
+// get agent list for users
+router.get('/agents', verifyToken, async (req, res) => {
+    try {
+        const result = await userCollection.find({ account_type: 'agent'}).toArray();
+        res.send(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error Occurred: ', error); 
+    }
+})
+
 // get single user info
 router.get('/single', verifyToken, async (req, res) => {
     try {

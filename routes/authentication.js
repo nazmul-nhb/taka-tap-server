@@ -48,6 +48,10 @@ router.post('/login', async (req, res) => {
             return res.send({ success: false, message: "Wrong PIN!" });
         }
 
+        if (user.account_status !== 'active') {
+            return res.send({ success: false, message: "Account Not Active!" });
+        }
+
         delete user.pin;
 
         const token = jwt.sign(user, process.env.TOKEN_SECRET);
