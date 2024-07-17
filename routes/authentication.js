@@ -33,18 +33,18 @@ router.post('/register', async (req, res) => {
 
 // login a user
 router.post('/login', async (req, res) => {
-    console.log(req.body);
+    // console.log(req.body);
     try {
         const { credential, pin } = req.body;
 
         const user = await userCollection.findOne({ $or: [{ email: credential }, { mobile: credential }] });
-        
+
         if (!user) {
             return res.send({ success: false, message: "Account Not Found!" });
         }
 
         const pinMatched = await bcrypt.compare(pin, user.pin);
-       
+
         if (!pinMatched) {
             return res.send({ success: false, message: "Wrong PIN!" });
         }
@@ -52,7 +52,7 @@ router.post('/login', async (req, res) => {
         delete user.pin;
 
         const token = jwt.sign(user, process.env.TOKEN_SECRET);
-        
+
         res.send({ token, success: true, message: "Successfully Logged In!" });
     } catch (error) {
         res.status(500).send({ message: "Login Error!" });
