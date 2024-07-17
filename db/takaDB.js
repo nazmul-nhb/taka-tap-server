@@ -14,7 +14,8 @@ export const client = new MongoClient(uri, {
 });
 
 export const userCollection = client.db("takaDB").collection("users");
-
+export const transactionCollection = client.db("takaDB").collection("transactions");
+export const balanceCollection = client.db("takaDB").collection("balances");
 
 export const connectDB = async () => {
     try {

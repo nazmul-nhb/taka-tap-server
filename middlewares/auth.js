@@ -36,7 +36,7 @@ export const verifyAgent = async (req, res, next) => {
     const query = { email: user?.email };
     const result = await userCollection.findOne(query);
 
-    if (!result || result?.account_type !== 'agent')
+    if (!result || result?.account_type !== 'agent' || result?.account_type !== 'admin')
         return res.status(401).send({ message: 'Unauthorized Access!' });
 
     next();
