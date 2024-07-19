@@ -12,18 +12,18 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
         res.send(result);
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error Occurred: ', error);
+        res.status(500).send({ message: 'Internal Server Error!' });
     }
 });
 
 // get agent list for users
 router.get('/agents', verifyToken, async (req, res) => {
     try {
-        const result = await userCollection.find({ account_type: 'agent'}).toArray();
+        const result = await userCollection.find({ account_type: 'agent' }).toArray();
         res.send(result);
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error Occurred: ', error); 
+        res.status(500).send({ message: 'Internal Server Error!' });
     }
 })
 
@@ -35,18 +35,23 @@ router.get('/single', verifyToken, async (req, res) => {
         res.send(result);
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error Occurred: ', error);
+        res.status(500).send({ message: 'Internal Server Error!' });
     }
 });
 
 // update a user with admin account
 router.patch('/:email', verifyToken, verifyAdmin, async (req, res) => {
-    const user =req.body;
-    const filter = { email: req.params.email };
-    const options = { upsert: true };
-    const updatedUser = { $set: user };
-    const result = await userCollection.updateOne(filter, updatedUser, options);
-    res.send(result);
+    try {
+        const user = req.body;
+        const filter = { email: req.params.email };
+        const options = { upsert: true };
+        const updatedUser = { $set: user };
+        const result = await userCollection.updateOne(filter, updatedUser, options);
+        res.send(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Internal Server Error!' });
+    }
 })
 
 export default router;

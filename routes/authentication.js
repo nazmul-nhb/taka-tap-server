@@ -21,6 +21,7 @@ router.post('/register', async (req, res) => {
         // generate hashed PIN
         const hashedPIN = await bcrypt.hash(rawPIN, 13);
         user.pin = hashedPIN;
+        user.account_status = 'pending';
 
         const result = await userCollection.insertOne(user);
         res.send(result);
@@ -58,6 +59,7 @@ router.post('/login', async (req, res) => {
 
         res.send({ token, success: true, message: "Successfully Logged In!" });
     } catch (error) {
+        console.error("Error Logging in User: ", error);
         res.status(500).send({ message: "Login Error!" });
     }
 });
