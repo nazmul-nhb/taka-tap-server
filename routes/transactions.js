@@ -6,14 +6,12 @@ const router = express.Router();
 
 // function to generate transaction id
 const generateTransactionID = () => {
-    const prefix = 'taka_tap';
-    const date = new Date();
-    const formattedDate = date.toISOString().replace(/[-:.TZ]/g, '');
+    const date = Date.now();
 
-    // generate a random string of 8 alphanumeric characters
-    const randomString = Array.from({ length: 8 }, () => Math.random().toString(36).slice(2, 3)).join('');
+    // generate a random string of 11 alphanumeric characters
+    const randomString = Array.from({ length: 11 }, () => Math.random().toString(36).slice(2, 3)).join('');
 
-    return `${prefix}-${formattedDate}${randomString}`;
+    return `tt_${date}_${randomString}`;
 };
 
 // cash in/out request from user
@@ -35,7 +33,7 @@ router.post('/request/:amount', async (rq, res) => {
         const transactionResult = await transactionCollection.insertOne(transaction);
 
         if (transactionResult.insertedId) {
-            return res.send({ success: true, message: 'Cash In Request Sent!' });
+            return res.status(201).send({ success: true, message: 'Cash In Request Sent!' });
         } else {
             return res.status(500).send({ success: false, message: 'Request Failed!' });
         }
@@ -87,7 +85,7 @@ router.post('/in', verifyToken, verifyAgent, async (req, res) => {
         );
 
         if (transactionResult.modifiedCount > 0) {
-            return res.send({ success: true, message: 'Cash In Succeeded!' });
+            return res.status(201).send({ success: true, message: 'Cash In Succeeded!' });
         } else {
             return res.status(500).send({ success: false, message: 'Cash In Failed!' });
         }

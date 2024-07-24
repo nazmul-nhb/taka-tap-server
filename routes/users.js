@@ -9,7 +9,7 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
     try {
         const filter = { account_type: { $ne: 'admin' } };
         const result = await userCollection.find(filter).toArray();
-        res.send(result);
+        res.status(200).send(result);
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: 'Internal Server Error!' });
@@ -20,7 +20,7 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
 router.get('/agents', verifyToken, async (req, res) => {
     try {
         const result = await userCollection.find({ account_type: 'agent' }).toArray();
-        res.send(result);
+        res.status(200).send(result);
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: 'Internal Server Error!' });
@@ -32,7 +32,7 @@ router.get('/single', verifyToken, async (req, res) => {
     try {
         const email = req.query.email;
         const result = await userCollection.findOne({ email });
-        res.send(result);
+        res.status(200).send(result);
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: 'Internal Server Error!' });
@@ -47,7 +47,7 @@ router.patch('/:email', verifyToken, verifyAdmin, async (req, res) => {
         const options = { upsert: true };
         const updatedUser = { $set: user };
         const result = await userCollection.updateOne(filter, updatedUser, options);
-        res.send(result);
+        res.status(201).send(result);
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: 'Internal Server Error!' });

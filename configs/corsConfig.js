@@ -15,7 +15,7 @@ export const corsOptions = {
         if (allowedOrigins.includes(origin) || dynamicOriginPattern.test(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('Not Allowed by CORS!'));
+            callback(new Error('Not Allowed by CORS Policy!'));
         }
     }
 };

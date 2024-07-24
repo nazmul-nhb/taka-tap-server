@@ -25,6 +25,22 @@ app.get("/", async (req, res) => {
     res.send("Taka Server is Running!");
 });
 
+// error handler for 404
+app.use((req, res, next) => {
+    const error = new Error("Requested URL Not Found!");
+    error.status = 404;
+    next(error);
+});
+
+// final error handler
+app.use((error, req, res, next) => {
+    console.error(error);
+    res.status(error.status || 500).send({
+        success: false,
+        message: error.message || "Internal Server Error",
+    });
+});
+
 const run = async () => {
     await connectDB();
 

@@ -15,7 +15,7 @@ router.post('/register', async (req, res) => {
         const userExists = await userCollection.findOne({ $or: [{ email: user.email }, { mobile: user.mobile }] });
 
         if (userExists) {
-            return res.send({ message: 'User Already Exists!' });
+            return res.status(409).send({ message: 'User Already Exists!' });
         };
 
         // generate hashed PIN
@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
         user.account_status = 'pending';
 
         const result = await userCollection.insertOne(user);
-        res.send(result);
+        res.status(200).send(result);
     } catch (error) {
         console.error("Error Registering User: ", error);
         res.status(500).send({ message: "Registration Error!" });
@@ -40,24 +40,24 @@ router.post('/login', async (req, res) => {
         const user = await userCollection.findOne({ $or: [{ email: credential }, { mobile: credential }] });
 
         if (!user) {
-            return res.send({ success: false, message: "Account Not Found!" });
+            return res.status(404).send({ success: false, message: "Account Not Found!" });
         }
 
         const pinMatched = await bcrypt.compare(pin, user.pin);
 
         if (!pinMatched) {
-            return res.send({ success: false, message: "Wrong PIN!" });
+            return res.status(401).send({ success: false, message: "Wrong PIN!" });
         }
 
         if (user.account_status !== 'active') {
-            return res.send({ success: false, message: "Account Not Active!" });
+            return res.status(403).send({ success: false, message: "Account Not Active!" });
         }
 
         delete user.pin;
 
         const token = jwt.sign(user, process.env.TOKEN_SECRET);
 
-        res.send({ token, success: true, message: "Successfully Logged In!" });
+        res.status(200).send({ token, success: true, message: "Successfully Logged In!" });
     } catch (error) {
         console.error("Error Logging in User: ", error);
         res.status(500).send({ message: "Login Error!" });
