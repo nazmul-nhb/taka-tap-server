@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import moment from "moment";
 import { userCollection } from "../db/takaDB.js";
 
 const router = express.Router();
@@ -22,6 +23,7 @@ router.post('/register', async (req, res) => {
         const hashedPIN = await bcrypt.hash(rawPIN, 13);
         user.pin = hashedPIN;
         user.account_status = 'pending';
+        user.user_since = moment().format();
 
         const result = await userCollection.insertOne(user);
         res.status(200).send(result);
@@ -57,11 +59,12 @@ router.post('/login', async (req, res) => {
 
         const token = jwt.sign(user, process.env.TOKEN_SECRET);
 
-        res.status(200).send({ token, success: true, message: "Successfully Logged In!" });
+        res.status(200).send({ success: true, message: "Successfully Logged In!", token });
     } catch (error) {
         console.error("Error Logging in User: ", error);
-        res.status(500).send({ message: "Login Error!" });
+        res.status(500).send({ success: false, message: "Login Error!" });
     }
 });
+
 
 export default router;

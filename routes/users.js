@@ -52,6 +52,7 @@ router.patch('/:email', verifyToken, verifyAdmin, async (req, res) => {
         console.error(error);
         res.status(500).send({ message: 'Internal Server Error!' });
     }
-})
+});
+
 
 export default router;

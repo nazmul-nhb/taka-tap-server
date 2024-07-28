@@ -15,21 +15,32 @@ const generateTransactionID = () => {
 };
 
 // cash in/out request from user
-router.post('/request/:amount', async (rq, res) => {
+router.post('/request', verifyToken, async (req, res) => {
     try {
-        const amount = parseInt(req.params.amount);
-        const { email, request_type, request_time, request_status } = req.body;
+        // const userEmail = req.user.email;
+        const { name, mobile, email } = req.user;
 
-        const user = await userCollection.findOne({ email });
+        const transInfo = req.body;
 
-        delete user.pin;
-        delete user._id;
+        // const user = await userCollection.findOne({ email: userEmail });
+
+        // delete user.pin;
+        // delete user._id;
+
+        const agentExists = await userCollection.findOne({
+            mobile: transInfo.agent,
+            account_type: "agent"
+        });
+
+        if (!agentExists) {
+            return res.send({ success: false, message: 'Provide A Valid Agent Number!' }); 
+        }
 
         const transaction = {
-            ...user, cash_in_amount: amount, agent, request_type, request_time, request_status
+            name, mobile, email, ...transInfo
         };
 
-        // update balance in transaction collection
+        // add pending request in transaction collection
         const transactionResult = await transactionCollection.insertOne(transaction);
 
         if (transactionResult.insertedId) {
@@ -42,7 +53,7 @@ router.post('/request/:amount', async (rq, res) => {
         console.error("Cash In Error: ", error);
         res.status(500).send({ message: 'Internal Server Error!' });
     }
-})
+});
 
 // cash in route
 router.post('/in', verifyToken, verifyAgent, async (req, res) => {
