@@ -17,23 +17,26 @@ const generateTransactionID = () => {
 // cash in/out request from user
 router.post('/request', verifyToken, async (req, res) => {
     try {
-        // const userEmail = req.user.email;
         const { name, mobile, email } = req.user;
 
         const transInfo = req.body;
 
-        // const user = await userCollection.findOne({ email: userEmail });
+        // check if user has enough balance for cash out request
+        if (transInfo.request_type === "cash-out") {
+            const payableAmount = transInfo.amount * 1.015
 
-        // delete user.pin;
-        // delete user._id;
+            const isEnoughBalance = await userCollection.findOne({ email, balance: { $gte: payableAmount } });
 
-        const agentExists = await userCollection.findOne({
-            mobile: transInfo.agent,
-            account_type: "agent"
-        });
+            if (!isEnoughBalance) {
+                return res.send({ success: false, message: 'Insufficient Balance!' });
+            }
+        }
+
+        // check if the agent number user provided is valid
+        const agentExists = await userCollection.findOne({ mobile: transInfo.agent, account_type: "agent" });
 
         if (!agentExists) {
-            return res.send({ success: false, message: 'Provide A Valid Agent Number!' }); 
+            return res.send({ success: false, message: 'Provide A Valid Agent Number!' });
         }
 
         const transaction = {
@@ -44,13 +47,13 @@ router.post('/request', verifyToken, async (req, res) => {
         const transactionResult = await transactionCollection.insertOne(transaction);
 
         if (transactionResult.insertedId) {
-            return res.status(201).send({ success: true, message: 'Cash In Request Sent!' });
+            return res.status(201).send({ success: true, message: 'Request Sent!' });
         } else {
             return res.status(500).send({ success: false, message: 'Request Failed!' });
         }
 
     } catch (error) {
-        console.error("Cash In Error: ", error);
+        console.error("Transaction Request Error: ", error);
         res.status(500).send({ message: 'Internal Server Error!' });
     }
 });
