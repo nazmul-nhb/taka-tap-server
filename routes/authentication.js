@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import moment from "moment";
 import { userCollection } from "../db/takaDB.js";
+import { verifyToken } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -63,6 +64,34 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         console.error("Error Logging in User: ", error);
         res.status(500).send({ success: false, message: "Login Error!" });
+    }
+});
+
+// verify before transaction
+router.post('/verify', verifyToken, async (req, res) => {
+    try {
+        const { pin } = req.body;
+
+        const user = await userCollection.findOne({ email: req.user.email });
+
+        if (!user) {
+            return res.send({ success: false, message: "Account Not Found!" });
+        }
+
+        const pinMatched = await bcrypt.compare(pin, user.pin);
+
+        if (!pinMatched) {
+            return res.send({ success: false, message: "Wrong PIN!" });
+        }
+
+        if (user.account_status !== 'active') {
+            return res.send({ success: false, message: "Account Not Active!" });
+        }
+
+        res.status(200).send({ success: true, message: "PIN Matched!" });
+    } catch (error) {
+        console.error("Error Verifying PIN: ", error);
+        res.status(500).send({ success: false, message: "Internal Server Error!" });
     }
 });
 

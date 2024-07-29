@@ -58,6 +58,20 @@ router.post('/request', verifyToken, async (req, res) => {
     }
 });
 
+// send money route
+router.post('/send', verifyToken, async (req, res) => {
+    try {
+        const { name, mobile, email } = req.user;
+
+        const transInfo = req.body;
+
+        console.log(transInfo, req.user);
+    } catch (error) {
+        console.error("Send Money Error: ", error);
+        res.status(500).send({ message: 'Internal Server Error!' });
+    }
+})
+
 // cash in route
 router.post('/in', verifyToken, verifyAgent, async (req, res) => {
     try {
