@@ -1,6 +1,7 @@
 import express from "express";
 import { transactionCollection, userCollection } from "../db/takaDB.js";
 import { verifyToken, verifyAgent, verifyAdmin } from "../middlewares/auth.js";
+import moment from "moment";
 
 const router = express.Router();
 
@@ -102,20 +103,41 @@ router.post('/send', verifyToken, async (req, res) => {
             const transactionID = generateTransactionID();
 
             const senderData = {
-                name, mobile, email, balance: sender.balance, transactionID, ...transInfo
+                name,
+                mobile,
+                email,
+                balance: sender.balance,
+                transactionID,
+                ...transInfo
             };
 
             delete transInfo.receiver;
 
             const receiverData = {
-                name: receiver.name, mobile: receiver.mobile, email: receiver.email, sender: mobile, transactionID, ...transInfo,
+                name: receiver.name,
+                mobile: receiver.mobile,
+                email: receiver.email,
+                balance: receiver.balance,
+                transactionID,
+                amount: transInfo.amount,
+                sender: mobile,
+                transaction_type: "receive-money",
+                time: moment().format(),
             };
 
             // add in transaction collection
             const transactionResult = await transactionCollection.insertMany([senderData, receiverData]);
 
             if (transactionResult.insertedIds) {
-                return res.status(201).send({ success: true, message: 'Money Sent!' });
+                return res.status(201).send({
+                    success: true,
+                    message: 'Money Sent!',
+                    transactionID,
+                    amount: transInfo.amount,
+                    receiver: receiverData.mobile,
+                    charge: payableAmount - transInfo.amount,
+                    current_balance: sender.balance,
+                });
             } else {
                 return res.status(500).send({ success: false, message: 'Internal Server Error!' });
             }
