@@ -22,6 +22,17 @@ router.post('/request', verifyToken, async (req, res) => {
 
         const transInfo = req.body;
 
+        // check if there is any pending request
+        const hasPendingRequest = await transactionCollection.findOne({
+            mobile,
+            transaction_type: transInfo.transaction_type,
+            request_status: "pending"
+        });
+
+        if (hasPendingRequest) {
+            return res.send({ success: false, message: 'Already have a Pending Request!' });
+        }
+
         // check if user has enough balance for cash out request
         if (transInfo.transaction_type === "cash-out") {
             const payableAmount = transInfo.amount * 1.015
@@ -102,6 +113,7 @@ router.post('/send', verifyToken, async (req, res) => {
 
             const transactionID = generateTransactionID();
 
+            // transaction data to save in db for sender
             const senderData = {
                 name,
                 mobile,
@@ -111,8 +123,7 @@ router.post('/send', verifyToken, async (req, res) => {
                 ...transInfo
             };
 
-            delete transInfo.receiver;
-
+            // transaction data to save in db for receiver
             const receiverData = {
                 name: receiver.name,
                 mobile: receiver.mobile,
