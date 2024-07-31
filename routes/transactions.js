@@ -9,11 +9,39 @@ const router = express.Router();
 const generateTransactionID = () => {
     const date = Date.now();
 
-    // generate a random string of 11 alphanumeric characters
-    const randomString = Array.from({ length: 11 }, () => Math.random().toString(36).slice(2, 3)).join('');
+    // generate a random string of 9 alphanumeric characters
+    const randomString = Array.from({ length: 9 }, () => Math.random().toString(36).slice(2, 3)).join('').toUpperCase();
 
-    return `tt_${date}_${randomString}`;
+    return `TT.${date}.${randomString}`;
 };
+
+// get transaction info
+router.get('/', async (req, res) => {
+    try {
+        let filter = {};
+
+        const transaction_type = req.query.type;
+        const mobile = req.query.mobile;
+
+        if (transaction_type && transaction_type !== undefined) {
+            filter.transaction_type = transaction_type;
+        }
+        if (mobile && mobile !== undefined) {
+            filter.mobile = mobile;
+        }
+
+        const transactionResult = await transactionCollection.find(filter).toArray();
+        
+        if (transactionResult.length < 1) {
+            return res.send({ message: "No Transaction Found!" })
+        }
+
+        return res.status(201).send(transactionResult);
+    } catch (error) {
+        console.error("Getting Transaction Error: ", error);
+        res.status(500).send({ message: 'Internal Server Error!' });
+    }
+})
 
 // cash in/out request from user
 router.post('/request', verifyToken, async (req, res) => {

@@ -13,7 +13,8 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middlewares
-app.use(cors(corsOptions));
+// TODO: Add corsOptions later
+app.use(cors());
 app.use(express.json());
 
 // routes
