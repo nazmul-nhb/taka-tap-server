@@ -43,13 +43,13 @@ router.post('/login', async (req, res) => {
         const user = await userCollection.findOne({ $or: [{ email: credential }, { mobile: credential }] });
 
         if (!user) {
-            return res.status(404).send({ success: false, message: "Account Not Found!" });
+            return res.status(404).send({ success: false, message: "Invalid Credentials!" });
         }
 
         const pinMatched = await bcrypt.compare(pin, user.pin);
 
         if (!pinMatched) {
-            return res.status(401).send({ success: false, message: "Server Error!" });
+            return res.status(401).send({ success: false, message: "Invalid Credentials!" });
         }
 
         if (user.account_status !== 'active') {
@@ -75,13 +75,13 @@ router.post('/verify', verifyToken, async (req, res) => {
         const user = await userCollection.findOne({ email: req.user.email });
 
         if (!user) {
-            return res.send({ success: false, message: "Account Not Found!" });
+            return res.send({ success: false, message: "Invalid Credentials!" });
         }
 
         const pinMatched = await bcrypt.compare(pin, user.pin);
 
         if (!pinMatched) {
-            return res.send({ success: false, message: "Wrong PIN!" });
+            return res.send({ success: false, message: "Invalid Credentials!" });
         }
 
         if (user.account_status !== 'active') {
