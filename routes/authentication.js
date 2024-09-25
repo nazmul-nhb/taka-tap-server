@@ -49,7 +49,7 @@ router.post('/login', async (req, res) => {
         const pinMatched = await bcrypt.compare(pin, user.pin);
 
         if (!pinMatched) {
-            return res.status(401).send({ success: false, message: "Wrong PIN!" });
+            return res.status(401).send({ success: false, message: "Server Error!" });
         }
 
         if (user.account_status !== 'active') {
